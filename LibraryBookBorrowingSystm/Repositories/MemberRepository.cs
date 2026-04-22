@@ -22,9 +22,9 @@ public class MemberRepository : IMemberRepository
         return _context.Members.Find( id);
     }
 
-    public Member? GetByName(String Fname, String Lname)
+    public Member? GetByName(String fullName)
     {
-        return _context.Members.FirstOrDefault(u => u.FirstName == Fname && u.LastName == Lname);
+        return _context.Members.FirstOrDefault(u => u.FullName == fullName);
     }
     public Member? GetByEmail(String email)
     {

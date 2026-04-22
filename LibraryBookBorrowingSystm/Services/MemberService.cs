@@ -1,3 +1,4 @@
+
 using LibraryBookBorrowingSystem.Models;
 using LibraryBookBorrowingSystem.Repositories;
 
@@ -21,9 +22,9 @@ public class MemberService : IMemberService
     {
         return _memberRepository.GetById(id);
     }
-    public Member? GetMemberByName(string firstName, string lastName)
+    public Member? GetMemberByName(string fullName)
     {
-        return _memberRepository.GetByName(firstName, lastName);
+        return _memberRepository.GetByName(fullName);
     }
     public Member? GetMemberByEmail(string email)
     {
@@ -34,8 +35,7 @@ public class MemberService : IMemberService
         var member = new Member
         {
             Id = Guid.NewGuid(),
-            FirstName = request.FirstName,
-            LastName = request.LastName,
+            FullName = request.FullName,
             Email = request.Email,
             MembershipDate = DateTime.UtcNow,
         }; 
@@ -51,8 +51,7 @@ public class MemberService : IMemberService
             throw new InvalidOperationException("Member not found.");
         }
 
-        member.FirstName = request.FirstName;
-        member.LastName = request.LastName;
+        member.FullName = request.FullName;
         member.Email = request.Email;
 
         return _memberRepository.Update(member);
@@ -68,4 +67,5 @@ public class MemberService : IMemberService
 
         _memberRepository.Delete(member);
     }
+
 }

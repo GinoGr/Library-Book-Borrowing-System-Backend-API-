@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using LibraryBookBorrowingSystem.Models;
 using LibraryBookBorrowingSystem.Services;
+using System.ComponentModel.DataAnnotations;
 
 namespace LibraryBookBorrowingSystem.Controllers;
 
@@ -46,10 +47,11 @@ public class MemberController : ControllerBase
         return Ok(member);
     }
 
-   [HttpGet("by-name/{firstName}/{lastName}")]
-    public ActionResult<Member> GetmemberByNames(string firstName, string lastName)
+   [HttpGet("by-name/{FullName}")]
+    public ActionResult<Member> GetmemberByNames(string FullName)
     {
-        var member = _memberService.GetMemberByName(firstName, lastName);
+
+        var member = _memberService.GetMemberByName(FullName);
         if (member is null)
         {
             return NotFound();
@@ -61,13 +63,17 @@ public class MemberController : ControllerBase
     [HttpPost]
     public ActionResult<Member> Createmember([FromBody] Member input)
     {
-        if (string.IsNullOrWhiteSpace(input.FirstName) || string.IsNullOrWhiteSpace(input.LastName))
+        if (string.IsNullOrWhiteSpace(input.FullName))
         {
-            return BadRequest("First and last name are required.");
+            return BadRequest("Full name is required.");
         }
         if (string.IsNullOrWhiteSpace(input.Email))
         {
             return BadRequest("Email is required.");
+        }
+        if (!new EmailAddressAttribute().IsValid(input.Email))
+        {
+            return BadRequest("Invalid email format.");
         }
         if (_memberService.GetMemberByEmail(input.Email) != null)
         {
@@ -82,9 +88,9 @@ public class MemberController : ControllerBase
     [HttpPut("{id:guid}")]
     public ActionResult<Member> Updatemember(Guid id, [FromBody] Member input)
     {
-        if (string.IsNullOrWhiteSpace(input.FirstName) || string.IsNullOrWhiteSpace(input.LastName))
+        if (string.IsNullOrWhiteSpace(input.FullName))
         {
-            return BadRequest("First and last name are required.");
+            return BadRequest("Full name is required.");
         }
         if (string.IsNullOrWhiteSpace(input.Email))
         {
