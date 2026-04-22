@@ -7,7 +7,8 @@ namespace LibraryBookBorrowingSystem.Data
     {
         public ApplicationDbContext CreateDbContext(string[] args)
         {
-           var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
+
             optionsBuilder.UseSqlite("Data Source=library.db");
 
             return new ApplicationDbContext(optionsBuilder.Options);

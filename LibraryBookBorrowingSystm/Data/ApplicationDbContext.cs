@@ -9,7 +9,7 @@ namespace LibraryBookBorrowingSystem.Data
             : base(options) { }
 
         public DbSet<Member> Members => Set<Member>();
-//        public DbSet<Registration> Registrations => Set<Registration>();
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

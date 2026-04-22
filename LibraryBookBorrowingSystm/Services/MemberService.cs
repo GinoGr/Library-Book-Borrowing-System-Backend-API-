@@ -38,7 +38,6 @@ public class MemberService : IMemberService
             LastName = request.LastName,
             Email = request.Email,
             MembershipDate = DateTime.UtcNow,
-            //Registrations = new List<Registration>()
         }; 
 
         return _memberRepository.Add(member);
