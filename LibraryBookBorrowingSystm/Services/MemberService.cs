@@ -42,4 +42,30 @@ public class MemberService : IMemberService
 
         return _memberRepository.Add(member);
     }
+
+    public Member UpdateMember(Guid id, Member request)
+    {
+        var member = _memberRepository.GetById(id);
+        if (member is null)
+        {
+            throw new InvalidOperationException("Member not found.");
+        }
+
+        member.FirstName = request.FirstName;
+        member.LastName = request.LastName;
+        member.Email = request.Email;
+
+        return _memberRepository.Update(member);
+    }
+
+    public void DeleteMember(Guid id)
+    {
+        var member = _memberRepository.GetById(id);
+        if (member is null)
+        {
+            throw new InvalidOperationException("Member not found.");
+        }
+
+        _memberRepository.Delete(member);
+    }
 }

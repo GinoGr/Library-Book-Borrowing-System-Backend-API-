@@ -9,4 +9,6 @@ public interface IMemberRepository
     Member? GetByName(String Fname, String Lname);
     Member? GetByEmail(String email);
     Member Add(Member member);
+    Member Update(Member member);
+    void Delete(Member member);
 }

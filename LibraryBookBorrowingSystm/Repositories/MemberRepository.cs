@@ -37,4 +37,17 @@ public class MemberRepository : IMemberRepository
         _context.SaveChanges();
         return member;
     }
+
+    public Member Update(Member member)
+    {
+        _context.Members.Update(member);
+        _context.SaveChanges();
+        return member;
+    }
+
+    public void Delete(Member member)
+    {
+        _context.Members.Remove(member);
+        _context.SaveChanges();
+    }
 }

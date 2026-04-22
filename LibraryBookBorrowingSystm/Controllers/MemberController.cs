@@ -78,4 +78,44 @@ public class MemberController : ControllerBase
         var created = _memberService.CreateMember(input);
         return CreatedAtAction(nameof(GetmemberById), new { id = created.Id }, created);
     }
+
+    [HttpPut("{id:guid}")]
+    public ActionResult<Member> Updatemember(Guid id, [FromBody] Member input)
+    {
+        if (string.IsNullOrWhiteSpace(input.FirstName) || string.IsNullOrWhiteSpace(input.LastName))
+        {
+            return BadRequest("First and last name are required.");
+        }
+        if (string.IsNullOrWhiteSpace(input.Email))
+        {
+            return BadRequest("Email is required.");
+        }
+
+        var existing = _memberService.GetMemberById(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        if (input.Email != existing.Email && _memberService.GetMemberByEmail(input.Email) != null)
+        {
+            return BadRequest("Email is already in use.");
+        }
+
+        var updated = _memberService.UpdateMember(id, input);
+        return Ok(updated);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public ActionResult DeleteMember(Guid id)
+    {
+        var existing = _memberService.GetMemberById(id);
+        if (existing is null)
+        {
+            return NotFound();
+        }
+
+        _memberService.DeleteMember(id);
+        return NoContent();
+    }
 }
