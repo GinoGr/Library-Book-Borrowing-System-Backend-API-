@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LibraryBookBorrowingSystm.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260422225932_InitialCreate")]
+    [Migration("20260424030623_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -30,11 +30,7 @@ namespace LibraryBookBorrowingSystm.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("LastName")
+                    b.Property<string>("FullName")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

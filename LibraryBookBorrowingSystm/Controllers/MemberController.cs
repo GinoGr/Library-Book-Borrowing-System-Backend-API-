@@ -54,7 +54,7 @@ public class MemberController : ControllerBase
         var member = _memberService.GetMemberByName(FullName);
         if (member is null)
         {
-            return NotFound();
+            return NotFound (new { error = "Member not found." });
         }
 
         return Ok(member);
@@ -65,19 +65,19 @@ public class MemberController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(input.FullName))
         {
-            return BadRequest("Full name is required.");
+            return BadRequest( new { error = "Full name is required." });
         }
         if (string.IsNullOrWhiteSpace(input.Email))
         {
-            return BadRequest("Email is required.");
+            return BadRequest( new { error = "Email is required." });
         }
         if (!new EmailAddressAttribute().IsValid(input.Email))
         {
-            return BadRequest("Invalid email format.");
+            return BadRequest( new { error = "Invalid email format." });
         }
         if (_memberService.GetMemberByEmail(input.Email) != null)
         {
-            return BadRequest("Email is already in use.");
+            return Conflict(new { error = "Email is already in use." });
         }
         
 
@@ -90,22 +90,22 @@ public class MemberController : ControllerBase
     {
         if (string.IsNullOrWhiteSpace(input.FullName))
         {
-            return BadRequest("Full name is required.");
+            return BadRequest( new { error = "Full name is required." });
         }
         if (string.IsNullOrWhiteSpace(input.Email))
         {
-            return BadRequest("Email is required.");
+            return BadRequest( new { error = "Email is required." });
         }
 
         var existing = _memberService.GetMemberById(id);
         if (existing is null)
         {
-            return NotFound();
+            return NotFound( new { error = "Member not found." });
         }
 
         if (input.Email != existing.Email && _memberService.GetMemberByEmail(input.Email) != null)
         {
-            return BadRequest("Email is already in use.");
+            return BadRequest( new { error = "Email is already in use." });
         }
 
         var updated = _memberService.UpdateMember(id, input);
@@ -118,7 +118,7 @@ public class MemberController : ControllerBase
         var existing = _memberService.GetMemberById(id);
         if (existing is null)
         {
-            return NotFound();
+            return NotFound( new { error = "Member not found." });
         }
 
         _memberService.DeleteMember(id);

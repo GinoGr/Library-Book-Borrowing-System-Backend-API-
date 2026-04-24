@@ -1,5 +1,6 @@
 using LibraryBookBorrowingSystem.Data;
 using Microsoft.EntityFrameworkCore;
+using LibraryBookBorrowingSystem.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +29,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
 app.MapControllers();
