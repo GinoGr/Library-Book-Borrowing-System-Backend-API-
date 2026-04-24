@@ -1,5 +1,6 @@
 using LibraryBookBorrowingSystem.Data;
 using LibraryBookBorrowingSystem.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryBookBorrowingSystem.Repositories;
 
@@ -12,42 +13,49 @@ public class MemberRepository : IMemberRepository
         _context = context;
     }
 
-    public List<Member> GetAll()
+    public async Task<IEnumerable<Member>> GetAllAsync()
     {
-        return _context.Members.ToList();
+        return await _context.Members.ToListAsync();
     }
-
-    public Member? GetById(Guid id)
+    
+    public async Task<Member?> GetByIdAsync(Guid id)
     {
-        return _context.Members.Find( id);
+        return await _context.Members.FindAsync(id);
     }
-
-    public Member? GetByName(String fullName)
+    
+    public async Task<Member?> GetByEmailAsync(string email)
     {
-        return _context.Members.FirstOrDefault(u => u.FullName == fullName);
+        return await _context.Members
+            .FirstOrDefaultAsync(m => m.Email == email);
     }
-    public Member? GetByEmail(String email)
+    
+    public async Task<Member?> GetByNameAsync(string name)
     {
-        return _context.Members.FirstOrDefault(u => u.Email == email);
+        return await _context.Members
+            .FirstOrDefaultAsync(m => m.FullName == name);
     }
-
-    public Member Add(Member member)
+    
+    public async Task<Member> CreateAsync(Member member)
     {
         _context.Members.Add(member);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return member;
     }
-
-    public Member Update(Member member)
+    
+    public async Task<Member> UpdateAsync(Member member)
     {
         _context.Members.Update(member);
-        _context.SaveChanges();
+        await _context.SaveChangesAsync();
         return member;
     }
-
-    public void Delete(Member member)
+    
+    public async Task DeleteAsync(Guid id)
     {
-        _context.Members.Remove(member);
-        _context.SaveChanges();
+        var member = await _context.Members.FindAsync(id);
+        if (member != null)
+        {
+            _context.Members.Remove(member);
+            await _context.SaveChangesAsync();
+        }
     }
 }

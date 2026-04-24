@@ -17,41 +17,40 @@ public class MemberController : ControllerBase
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<Member>> Getmembers()
+    public async Task<ActionResult<IEnumerable<Member>>> Getmembers()
     {
-        var members = _memberService.GetMembers();
+        var members = await _memberService.GetMembers();
         return Ok(members);
     }
 
     [HttpGet("by-id/{id:guid}")]
-    public ActionResult<Member> GetmemberById(Guid id)
+    public async Task<ActionResult<Member>> GetmemberById(Guid id)
     {
-        var member = _memberService.GetMemberById(id);
+        var member = await _memberService.GetMemberByIdAsync(id);
+
         if (member is null)
-        {
-            return NotFound();
-        }
+            return NotFound(new { error = "Member not found." });
 
         return Ok(member);
     }
 
     [HttpGet("by-email/{email}")]
-    public ActionResult<Member> GetmemberByEmail(string email)
+    public async Task<ActionResult<Member>> GetmemberByEmail(string email)
     {
-        var member = _memberService.GetMemberByEmail(email);
+        var member = await _memberService.GetMemberByEmailAsync(email);
         if (member is null)
         {
-            return NotFound();
+            return NotFound(new { error = "Member not found." });
         }
 
         return Ok(member);
     }
 
-   [HttpGet("by-name/{FullName}")]
-    public ActionResult<Member> GetmemberByNames(string FullName)
+    [HttpGet("by-name/{FullName}")]
+    public async Task<ActionResult<Member>> GetmemberByNames(string FullName)
     {
 
-        var member = _memberService.GetMemberByName(FullName);
+        var member = await _memberService.GetMemberByNameAsync(FullName);
         if (member is null)
         {
             return NotFound (new { error = "Member not found." });
@@ -61,7 +60,7 @@ public class MemberController : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<Member> Createmember([FromBody] Member input)
+    public async Task<ActionResult<Member>> Createmember([FromBody] Member input)
     {
         if (string.IsNullOrWhiteSpace(input.FullName))
         {
@@ -75,18 +74,18 @@ public class MemberController : ControllerBase
         {
             return BadRequest( new { error = "Invalid email format." });
         }
-        if (_memberService.GetMemberByEmail(input.Email) != null)
+        if (await _memberService.GetMemberByEmailAsync(input.Email) != null)
         {
             return Conflict(new { error = "Email is already in use." });
         }
         
 
-        var created = _memberService.CreateMember(input);
+        var created = await _memberService.CreateMemberAsync(input);
         return CreatedAtAction(nameof(GetmemberById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id:guid}")]
-    public ActionResult<Member> Updatemember(Guid id, [FromBody] Member input)
+    public async Task<ActionResult<Member>> Updatemember(Guid id, [FromBody] Member input)
     {
         if (string.IsNullOrWhiteSpace(input.FullName))
         {
@@ -97,31 +96,25 @@ public class MemberController : ControllerBase
             return BadRequest( new { error = "Email is required." });
         }
 
-        var existing = _memberService.GetMemberById(id);
+        var existing = await _memberService.GetMemberByIdAsync(id);
         if (existing is null)
         {
             return NotFound( new { error = "Member not found." });
         }
 
-        if (input.Email != existing.Email && _memberService.GetMemberByEmail(input.Email) != null)
+        if (input.Email != existing.Email && await _memberService.GetMemberByEmailAsync(input.Email) != null)
         {
             return BadRequest( new { error = "Email is already in use." });
         }
 
-        var updated = _memberService.UpdateMember(id, input);
+        var updated = await _memberService.UpdateMemberAsync(id, input);
         return Ok(updated);
     }
 
     [HttpDelete("{id:guid}")]
-    public ActionResult DeleteMember(Guid id)
+    public async Task<ActionResult> DeleteMember(Guid id)
     {
-        var existing = _memberService.GetMemberById(id);
-        if (existing is null)
-        {
-            return NotFound( new { error = "Member not found." });
-        }
-
-        _memberService.DeleteMember(id);
+        await _memberService.DeleteMemberAsync(id);
         return NoContent();
     }
 }

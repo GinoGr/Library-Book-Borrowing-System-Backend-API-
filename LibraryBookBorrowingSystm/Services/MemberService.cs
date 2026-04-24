@@ -13,59 +13,49 @@ public class MemberService : IMemberService
         _memberRepository = memberRepository;
     }
 
-    public IEnumerable<Member> GetMembers()
+    public async Task<IEnumerable<Member>> GetMembers()
     {
-        return _memberRepository.GetAll();
+        return await _memberRepository.GetAllAsync();
     }
 
-    public Member? GetMemberById(Guid id)
+    public async Task<Member?> GetMemberByIdAsync(Guid id)
     {
-        return _memberRepository.GetById(id);
-    }
-    public Member? GetMemberByName(string fullName)
-    {
-        return _memberRepository.GetByName(fullName);
-    }
-    public Member? GetMemberByEmail(string email)
-    {
-        return _memberRepository.GetByEmail(email);
-    }
-    public Member CreateMember(Member request)
-    {
-        var member = new Member
-        {
-            Id = Guid.NewGuid(),
-            FullName = request.FullName,
-            Email = request.Email,
-            MembershipDate = DateTime.UtcNow,
-        }; 
-
-        return _memberRepository.Add(member);
+        return await _memberRepository.GetByIdAsync(id);
     }
 
-    public Member UpdateMember(Guid id, Member request)
+    public async Task<Member?> GetMemberByEmailAsync(string email)
     {
-        var member = _memberRepository.GetById(id);
-        if (member is null)
-        {
+        return await _memberRepository.GetByEmailAsync(email);
+    }
+
+    public async Task<Member?> GetMemberByNameAsync(string name)
+    {
+        return await _memberRepository.GetByNameAsync(name);
+    }
+
+    public async Task<Member> CreateMemberAsync(Member member)
+    {
+        return await _memberRepository.CreateAsync(member);
+    }
+
+    public async Task<Member> UpdateMemberAsync(Guid id, Member member)
+    {
+        var existing = await _memberRepository.GetByIdAsync(id);
+        if (existing == null)
             throw new InvalidOperationException("Member not found.");
-        }
 
-        member.FullName = request.FullName;
-        member.Email = request.Email;
+        existing.FullName = member.FullName;
+        existing.Email = member.Email;
 
-        return _memberRepository.Update(member);
+        return await _memberRepository.UpdateAsync(existing);
     }
 
-    public void DeleteMember(Guid id)
+    public async Task DeleteMemberAsync(Guid id)
     {
-        var member = _memberRepository.GetById(id);
-        if (member is null)
-        {
+        var existing = await _memberRepository.GetByIdAsync(id);
+        if (existing == null)
             throw new InvalidOperationException("Member not found.");
-        }
 
-        _memberRepository.Delete(member);
+        await _memberRepository.DeleteAsync(id);
     }
-
 }
