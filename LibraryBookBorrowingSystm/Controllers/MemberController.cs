@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using LibraryBookBorrowingSystem.Models;
 using LibraryBookBorrowingSystem.Services;
-using System.ComponentModel.DataAnnotations;
+using LibraryBookBorrowingSystm.DTOs.Responses;
+using LibraryBookBorrowingSystm.DTOs.Requests;
 
 namespace LibraryBookBorrowingSystem.Controllers;
 
@@ -17,25 +18,42 @@ public class MemberController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Member>>> Getmembers()
+    public async Task<ActionResult<IEnumerable<MemberResponse>>> Getmembers()
     {
         var members = await _memberService.GetMembers();
-        return Ok(members);
+
+        var response = members.Select(member => new MemberResponse
+        {
+            Id = member.Id,
+            FullName = member.FullName,
+            Email = member.Email,
+            MembershipDate = member.MembershipDate
+        });
+
+        return Ok(response);
     }
 
     [HttpGet("by-id/{id:guid}")]
-    public async Task<ActionResult<Member>> GetmemberById(Guid id)
+    public async Task<ActionResult<MemberResponse>> GetMemberById(Guid id)
     {
         var member = await _memberService.GetMemberByIdAsync(id);
 
         if (member is null)
             return NotFound(new { error = "Member not found." });
 
-        return Ok(member);
+        var response = new MemberResponse
+        {
+            Id = member.Id,
+            FullName = member.FullName,
+            Email = member.Email,
+            MembershipDate = member.MembershipDate
+        };
+
+        return Ok(response);
     }
 
     [HttpGet("by-email/{email}")]
-    public async Task<ActionResult<Member>> GetmemberByEmail(string email)
+    public async Task<ActionResult<MemberResponse>> GetmemberByEmail(string email)
     {
         var member = await _memberService.GetMemberByEmailAsync(email);
         if (member is null)
@@ -43,11 +61,19 @@ public class MemberController : ControllerBase
             return NotFound(new { error = "Member not found." });
         }
 
-        return Ok(member);
+        var response = new MemberResponse
+        {
+            Id = member.Id,
+            FullName = member.FullName,
+            Email = member.Email,
+            MembershipDate = member.MembershipDate
+        };
+
+        return Ok(response);
     }
 
     [HttpGet("by-name/{FullName}")]
-    public async Task<ActionResult<Member>> GetmemberByNames(string FullName)
+    public async Task<ActionResult<MemberResponse>> GetmemberByNames(string FullName)
     {
 
         var member = await _memberService.GetMemberByNameAsync(FullName);
@@ -56,59 +82,80 @@ public class MemberController : ControllerBase
             return NotFound (new { error = "Member not found." });
         }
 
-        return Ok(member);
+        var response = new MemberResponse
+        {
+            Id = member.Id,
+            FullName = member.FullName,
+            Email = member.Email,
+            MembershipDate = member.MembershipDate
+        };
+
+        return Ok(response);
     }
 
     [HttpPost]
-    public async Task<ActionResult<Member>> Createmember([FromBody] Member input)
+    public async Task<ActionResult<MemberResponse>> CreateMember([FromBody] CreateMemberRequest input)
     {
-        if (string.IsNullOrWhiteSpace(input.FullName))
-        {
-            return BadRequest( new { error = "Full name is required." });
-        }
-        if (string.IsNullOrWhiteSpace(input.Email))
-        {
-            return BadRequest( new { error = "Email is required." });
-        }
-        if (!new EmailAddressAttribute().IsValid(input.Email))
-        {
-            return BadRequest( new { error = "Invalid email format." });
-        }
-        if (await _memberService.GetMemberByEmailAsync(input.Email) != null)
-        {
-            return Conflict(new { error = "Email is already in use." });
-        }
-        
+        if (!ModelState.IsValid)
+            return BadRequest(new { error = "Invalid input." });
 
-        var created = await _memberService.CreateMemberAsync(input);
-        return CreatedAtAction(nameof(GetmemberById), new { id = created.Id }, created);
+        if (await _memberService.GetMemberByEmailAsync(input.Email) != null)
+            return Conflict(new { error = "Email is already in use." });
+
+        var member = new Member
+        {
+            FullName = input.FullName,
+            Email = input.Email
+        };
+
+        var created = await _memberService.CreateMemberAsync(member);
+
+        var response = new MemberResponse
+        {
+            Id = created.Id,
+            FullName = created.FullName,
+            Email = created.Email,
+            MembershipDate = created.MembershipDate
+        };
+
+        return CreatedAtAction(nameof(GetMemberById), new { id = response.Id }, response);
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<Member>> Updatemember(Guid id, [FromBody] Member input)
+    public async Task<ActionResult<MemberResponse>> Updatemember(Guid id, [FromBody] UpdateMemberRequest input)
     {
-        if (string.IsNullOrWhiteSpace(input.FullName))
-        {
-            return BadRequest( new { error = "Full name is required." });
-        }
-        if (string.IsNullOrWhiteSpace(input.Email))
-        {
-            return BadRequest( new { error = "Email is required." });
-        }
+        if (!ModelState.IsValid)
+            return BadRequest(new { error = "Invalid input." });
 
         var existing = await _memberService.GetMemberByIdAsync(id);
         if (existing is null)
         {
-            return NotFound( new { error = "Member not found." });
+            return NotFound(new { error = "Member not found." });
         }
 
-        if (input.Email != existing.Email && await _memberService.GetMemberByEmailAsync(input.Email) != null)
+        if (input.Email != existing.Email &&
+            await _memberService.GetMemberByEmailAsync(input.Email) != null)
         {
-            return BadRequest( new { error = "Email is already in use." });
+            return Conflict(new { error = "Email is already in use." });
         }
 
-        var updated = await _memberService.UpdateMemberAsync(id, input);
-        return Ok(updated);
+        var memberToUpdate = new Member
+        {
+            FullName = input.FullName,
+            Email = input.Email
+        };
+
+        var updated = await _memberService.UpdateMemberAsync(id, memberToUpdate);
+
+        var response = new MemberResponse
+        {
+            Id = updated.Id,
+            FullName = updated.FullName,
+            Email = updated.Email,
+            MembershipDate = updated.MembershipDate
+        };
+
+        return Ok(response);
     }
 
     [HttpDelete("{id:guid}")]

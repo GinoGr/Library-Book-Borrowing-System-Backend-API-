@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LibraryBookBorrowingSystm")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+107a33875121b2e58b3f2b12f3f5c00311e60d02")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7b3a6c345505949dbe74402cde01214f9eac564b")]
 [assembly: System.Reflection.AssemblyProductAttribute("LibraryBookBorrowingSystm")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LibraryBookBorrowingSystm")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
