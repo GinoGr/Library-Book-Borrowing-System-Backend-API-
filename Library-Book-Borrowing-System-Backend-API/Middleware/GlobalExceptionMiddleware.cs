@@ -1,7 +1,7 @@
 using System.Net;
 using System.Text.Json;
 
-namespace LibraryApi.Middleware;
+namespace LibraryBookBorrowingSystm.Middleware;
 
 public class GlobalExceptionMiddleware
 {
@@ -26,7 +26,7 @@ public class GlobalExceptionMiddleware
             {
                 ArgumentException => (int)HttpStatusCode.BadRequest,
                 KeyNotFoundException => (int)HttpStatusCode.NotFound,
-                InvalidOperationException => (int)HttpStatusCode.Conflict,
+                InvalidOperationException => (int)HttpStatusCode.Conflict, 
                 _ => (int)HttpStatusCode.InternalServerError
             };
 

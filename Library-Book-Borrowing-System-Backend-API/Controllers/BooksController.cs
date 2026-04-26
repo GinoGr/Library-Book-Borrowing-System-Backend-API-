@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using LibraryApi.DTOs;
-using LibraryApi.Services;
+using LibraryBookBorrowingSystm.DTOs;
+using LibraryBookBorrowingSystm.Services;
 
-namespace LibraryApi.Controllers;
+namespace LibraryBookBorrowingSystm.Controllers;
 
 [ApiController]
 [Route("api/borrowing")]

@@ -1,6 +1,6 @@
-using LibraryApi.Models;
+using LibraryBookBorrowingSystm.Models;
 
-namespace LibraryApi.Repositories;
+namespace LibraryBookBorrowingSystm.Repositories;
 
 public interface IBorrowRecordRepository
 {

@@ -1,16 +1,9 @@
-using LibraryApi.DTOs;
-using LibraryApi.Models;
-using LibraryApi.Repositories;
+using LibraryBookBorrowingSystm.DTOs;
+using LibraryBookBorrowingSystm.Models;
+using LibraryBookBorrowingSystm.Repositories;
 using Microsoft.EntityFrameworkCore;
 
-namespace LibraryApi.Services;
-
-public interface IBorrowingService
-{
-    Task<BorrowRecordResponseDto> BorrowBookAsync(BorrowRequestDto request);
-    Task<BorrowRecordResponseDto> ReturnBookAsync(Guid memberId, Guid bookId);
-    Task<IEnumerable<BorrowRecordResponseDto>> GetMemberHistoryAsync(Guid memberId);
-}
+namespace LibraryBookBorrowingSystm.Services;
 
 public class BorrowingService : IBorrowingService
 {
