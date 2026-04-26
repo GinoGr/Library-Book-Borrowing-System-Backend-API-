@@ -1,6 +1,6 @@
 # Library Book Borrowing System
 
-ASP.NET Core Web API implementing a library book borrowing system with REST architecture, multi-layer design, async programming, concurrency handling, and in-memory caching.
+ASP.NET Core Web API implementing a library book borrowing system with REST architecture, multi-layer design, async programming, SQLite persistence, global exception handling, and in-memory caching.
 
 ---
 
@@ -10,8 +10,8 @@ ASP.NET Core Web API implementing a library book borrowing system with REST arch
 LibraryBookBorrowingSystm/
 ├── Controllers/
 │   ├── BooksController.cs
-│   ├── MembersController.cs       (stub)
-│   └── BorrowRecordsController.cs (stub)
+│   ├── MembersController.cs
+│   └── BorrowRecordsController.cs (placeholder)
 ├── DTOs/
 │   ├── Requests/
 │   │   ├── CreateBookRequest.cs
@@ -42,16 +42,16 @@ LibraryBookBorrowingSystm/
 │   │   ├── IMemberRepository.cs
 │   │   └── IBorrowRecordRepository.cs
 │   ├── BookRepository.cs
-│   ├── MemberRepository.cs        (stub)
-│   └── BorrowRecordRepository.cs  (stub)
+│   ├── MemberRepository.cs
+│   └── BorrowRecordRepository.cs  (placeholder)
 ├── Services/
 │   ├── Interfaces/
 │   │   ├── IBookService.cs
 │   │   ├── IMemberService.cs
 │   │   └── IBorrowService.cs
 │   ├── BookService.cs
-│   ├── MemberService.cs           (stub)
-│   └── BorrowService.cs           (stub)
+│   ├── MemberService.cs
+│   └── BorrowService.cs           (placeholder)
 ├── appsettings.json
 └── Program.cs
 ```
@@ -69,7 +69,7 @@ LibraryBookBorrowingSystm/
 | PUT | `/api/books/{id}` | Update a book | 200 |
 | DELETE | `/api/books/{id}` | Delete a book | 204 |
 
-### Members (TODO)
+### Members
 | Method | Route | Description | Status |
 |--------|-------|-------------|--------|
 | GET | `/api/members` | Get all members | 200 |
@@ -93,6 +93,9 @@ LibraryBookBorrowingSystm/
 ### Books CRUD
 Full create, read, update, delete for books with async EF Core data access.
 
+### Members CRUD
+Full create, read, update, delete for members with async EF Core data access and unique email validation.
+
 ### Caching
 `GET /api/books` and `GET /api/books/{id}` are cached with `IMemoryCache`:
 - TTL: 2 minutes absolute, 30 seconds sliding
@@ -114,11 +117,6 @@ All unhandled exceptions are caught by `GlobalExceptionMiddleware` and returned 
 ---
 
 ## TODO
-
-### Members
-- [ ] Implement `MemberService` (CRUD + unique email validation)
-- [ ] Implement `MemberRepository`
-- [ ] Implement `MembersController` (all 5 endpoints)
 
 ### Borrow Records
 - [ ] Implement `BorrowService` (borrow/return logic, eligibility checks)
@@ -165,7 +163,7 @@ dotnet ef database update
 - `TotalCopies` must be > 0
 - `AvailableCopies` must be between 0 and `TotalCopies`
 
-### Member Rules (TODO)
+### Member Rules
 - FullName is required
 - Email is required and must be a valid format
 - Email must be unique

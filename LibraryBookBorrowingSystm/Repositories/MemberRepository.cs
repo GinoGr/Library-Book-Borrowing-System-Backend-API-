@@ -1,10 +1,10 @@
 using LibraryBookBorrowingSystm.Data;
 using LibraryBookBorrowingSystm.Models;
 using LibraryBookBorrowingSystm.Repositories.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace LibraryBookBorrowingSystm.Repositories;
 
-// TODO: Member 2 — Implement MemberRepository
 public class MemberRepository : IMemberRepository
 {
     private readonly ApplicationDbContext _context;
@@ -14,10 +14,45 @@ public class MemberRepository : IMemberRepository
         _context = context;
     }
 
-    public Task<IEnumerable<Member>> GetAllAsync() => throw new NotImplementedException();
-    public Task<Member?> GetByIdAsync(Guid id) => throw new NotImplementedException();
-    public Task AddAsync(Member member) => throw new NotImplementedException();
-    public Task UpdateAsync(Member member) => throw new NotImplementedException();
-    public Task DeleteAsync(Guid id) => throw new NotImplementedException();
-    public Task<bool> ExistsAsync(Guid id) => throw new NotImplementedException();
+    public async Task<IEnumerable<Member>> GetAllAsync()
+    {
+        return await _context.Members.ToListAsync();
+    }
+
+    public async Task<Member?> GetByIdAsync(Guid id)
+    {
+        return await _context.Members.FindAsync(id);
+    }
+
+    public async Task<Member?> GetByEmailAsync(string email)
+    {
+        return await _context.Members.FirstOrDefaultAsync(m => m.Email == email);
+    }
+
+    public async Task AddAsync(Member member)
+    {
+        await _context.Members.AddAsync(member);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(Member member)
+    {
+        _context.Members.Update(member);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(Guid id)
+    {
+        var member = await _context.Members.FindAsync(id);
+        if (member != null)
+        {
+            _context.Members.Remove(member);
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task<bool> ExistsAsync(Guid id)
+    {
+        return await _context.Members.AnyAsync(m => m.Id == id);
+    }
 }
