@@ -12,6 +12,9 @@
 
 .env
 
+# Local SQLite database
+library.db
+
 
 
 # User-specific files

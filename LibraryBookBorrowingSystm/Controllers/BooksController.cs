@@ -1,5 +1,4 @@
 using LibraryBookBorrowingSystm.DTOs.Requests;
-using LibraryBookBorrowingSystm.Exceptions;
 using LibraryBookBorrowingSystm.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -26,15 +25,8 @@ public class BooksController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        try
-        {
-            var book = await _bookService.GetByIdAsync(id);
-            return Ok(book);
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
+        var book = await _bookService.GetByIdAsync(id);
+        return Ok(book);
     }
 
     [HttpPost]
@@ -53,32 +45,14 @@ public class BooksController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(new { error = string.Join("; ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)) });
 
-        try
-        {
-            var book = await _bookService.UpdateAsync(id, request);
-            return Ok(book);
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
-        catch (Exceptions.ValidationException ex)
-        {
-            return BadRequest(new { error = ex.Message });
-        }
+        var book = await _bookService.UpdateAsync(id, request);
+        return Ok(book);
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        try
-        {
-            await _bookService.DeleteAsync(id);
-            return NoContent();
-        }
-        catch (NotFoundException ex)
-        {
-            return NotFound(new { error = ex.Message });
-        }
+        await _bookService.DeleteAsync(id);
+        return NoContent();
     }
 }
