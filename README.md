@@ -2,8 +2,6 @@
 
 ASP.NET Core Web API implementing a library book borrowing system with REST architecture, multi-layer design, async programming, SQLite persistence, global exception handling, and in-memory caching.
 
----
-
 ## Project Structure
 
 ```
@@ -11,7 +9,7 @@ LibraryBookBorrowingSystm/
 ├── Controllers/
 │   ├── BooksController.cs
 │   ├── MembersController.cs
-│   └── BorrowRecordsController.cs (placeholder)
+│   └── BorrowRecordsController.cs
 ├── DTOs/
 │   ├── Requests/
 │   │   ├── CreateBookRequest.cs
@@ -43,7 +41,7 @@ LibraryBookBorrowingSystm/
 │   │   └── IBorrowRecordRepository.cs
 │   ├── BookRepository.cs
 │   ├── MemberRepository.cs
-│   └── BorrowRecordRepository.cs  (placeholder)
+│   └── BorrowRecordRepository.cs
 ├── Services/
 │   ├── Interfaces/
 │   │   ├── IBookService.cs
@@ -51,12 +49,10 @@ LibraryBookBorrowingSystm/
 │   │   └── IBorrowService.cs
 │   ├── BookService.cs
 │   ├── MemberService.cs
-│   └── BorrowService.cs           (placeholder)
+│   └── BorrowService.cs  
 ├── appsettings.json
 └── Program.cs
 ```
-
----
 
 ## API Endpoints
 
@@ -78,7 +74,7 @@ LibraryBookBorrowingSystm/
 | PUT | `/api/members/{id}` | Update a member | 200 |
 | DELETE | `/api/members/{id}` | Delete a member | 204 |
 
-### Borrow Records (TODO)
+### Borrow Records
 | Method | Route | Description | Status |
 |--------|-------|-------------|--------|
 | GET | `/api/borrow-records` | Get all borrow records | 200 |
@@ -86,43 +82,89 @@ LibraryBookBorrowingSystm/
 | PUT | `/api/borrow-records/{id}/return` | Return a book | 200 |
 | GET | `/api/members/{id}/borrow-history` | Borrow history for a member | 200 |
 
----
 
-## Implemented Features
+## Business Rules
 
-### Books CRUD
-Full create, read, update, delete for books with async EF Core data access.
+### Books
 
-### Members CRUD
-Full create, read, update, delete for members with async EF Core data access and unique email validation.
+- `Title`, `Author`, and `ISBN` are required.
+- `TotalCopies` must be greater than `0`.
+- `AvailableCopies` must be `0` or greater.
+- `AvailableCopies` cannot be greater than `TotalCopies`.
+- Newly created books start with `AvailableCopies` equal to `TotalCopies`.
 
-### Caching
-`GET /api/books` and `GET /api/books/{id}` are cached with `IMemoryCache`:
-- TTL: 2 minutes absolute, 30 seconds sliding
-- Cache is invalidated on any POST, PUT, or DELETE to `/api/books`
+### Members
 
-### Error Handling
-All unhandled exceptions are caught by `GlobalExceptionMiddleware` and returned as:
+- `FullName` is required.
+- `Email` is required and must be a valid email format.
+- Member email addresses must be unique.
+
+### Borrowing
+
+- The book must exist before it can be borrowed.
+- A member cannot borrow the same book twice while the first record is still active.
+- A book can only be borrowed when at least one copy is available.
+- Borrowing decreases `AvailableCopies` by `1`.
+- Returning a book marks the borrow record as `Returned`, sets `ReturnDate`, and increases `AvailableCopies` by `1`.
+- A borrow record can only be returned while its status is `Borrowed`.
+
+## Error Responses
+
+All handled errors return the same JSON shape:
+
 ```json
-{ "error": "Descriptive message here" }
+{
+  "error": "Descriptive message"
+}
 ```
 
-### Validation
-| Layer | What |
-|-------|------|
-| Controller | `[Required]`, `[Range]` via DataAnnotations + ModelState |
-| Service | Business rules (copy count constraints) |
-| Database | NOT NULL, UNIQUE constraints |
+Status code mapping:
 
----
+| Status | When it is used |
+|---|---|
+| `400 Bad Request` | Invalid request body or business validation failure |
+| `404 Not Found` | Requested book, member, or borrow record does not exist |
+| `409 Conflict` | Duplicate member email or no copies available during an atomic borrow attempt |
+| `500 Internal Server Error` | Unexpected server error |
 
-## TODO
+Unexpected server errors are logged internally and returned to clients as a generic message.
 
-### Borrow Records
-- [ ] Implement `BorrowService` (borrow/return logic, eligibility checks)
-- [ ] Implement `BorrowRecordRepository` (including atomic borrow decrement)
-- [ ] Implement `BorrowRecordsController` (all 4 endpoints)
-- [ ] Concurrency handling: atomic `UPDATE Books SET AvailableCopies = AvailableCopies - 1 WHERE Id = @bookId AND AvailableCopies > 0`; return 409 if `rowsAffected == 0`
+## Architecture
+
+The application uses a layered architecture:
+
+| Layer | Responsibility |
+|---|---|
+| Controllers | Routes, HTTP status codes, and request delegation |
+| Services | Business rules, validation, and DTO mapping |
+| Repositories | EF Core queries and database commands |
+| Data | `ApplicationDbContext` and migrations |
+| Middleware | Consistent exception-to-response handling |
+
+Dependencies flow through interfaces registered in `Program.cs`, which keeps controllers and services decoupled from concrete implementations.
+
+## Caching
+
+Book read endpoints are cached with `IMemoryCache`:
+
+- `GET /api/books` uses key `books:list`
+- `GET /api/books/{id}` uses key `books:{id}`
+- Absolute expiration: 2 minutes
+- Sliding expiration: 30 seconds
+
+Book create, update, and delete operations invalidate affected cache entries so later reads return fresh data.
+
+## Concurrency
+
+Borrowing uses an atomic SQL update to prevent two simultaneous requests from borrowing the last available copy:
+
+```sql
+UPDATE Books
+SET AvailableCopies = AvailableCopies - 1
+WHERE Id = @bookId AND AvailableCopies > 0
+```
+
+If the update affects one row, the borrow succeeds. If it affects zero rows, the API returns `409 Conflict` with `"No copies available."`
 
 ---
 
@@ -131,16 +173,6 @@ All unhandled exceptions are caught by `GlobalExceptionMiddleware` and returned 
 ### Prerequisites
 - .NET 8 SDK
 - `dotnet-ef` global tool
-
-### Run the API
-
-```bash
-cd LibraryBookBorrowingSystm
-dotnet ef database update
-dotnet run
-```
-
-Swagger UI will be available at `https://localhost:{port}/swagger`.
 
 ### Database Setup (first time)
 
@@ -153,21 +185,11 @@ dotnet tool install --global dotnet-ef
 dotnet ef migrations add InitialCreate
 dotnet ef database update
 ```
+### Run the API
 
----
+```bash
+cd LibraryBookBorrowingSystm
+dotnet watch run
+```
 
-## Business Rules
-
-### Book Rules
-- Title, Author, ISBN are required
-- `TotalCopies` must be > 0
-- `AvailableCopies` must be between 0 and `TotalCopies`
-
-### Member Rules
-- FullName is required
-- Email is required and must be a valid format
-- Email must be unique
-
-### Borrow Rules (TODO)
-- A book can only be borrowed if `AvailableCopies > 0`
-- A borrow record cannot be returned if its status is already `"Returned"`
+Swagger UI will be available at `https://localhost:{port}/swagger`.
