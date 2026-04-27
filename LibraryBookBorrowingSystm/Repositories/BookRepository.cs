@@ -16,6 +16,7 @@ public class BookRepository : IBookRepository
 
     public async Task<IEnumerable<Book>> GetAllAsync()
     {
+        Console.WriteLine("DB HIT");
         return await _context.Books.ToListAsync();
     }
 
@@ -49,5 +50,13 @@ public class BookRepository : IBookRepository
     public async Task<bool> ExistsAsync(Guid id)
     {
         return await _context.Books.AnyAsync(b => b.Id == id);
+    }
+
+    public async Task<bool> TryDecrementAvailableCopiesAsync(Guid id)
+    {
+        var rows = await _context.Database.ExecuteSqlRawAsync(
+            "UPDATE Books SET AvailableCopies = AvailableCopies - 1 WHERE Id = {0} AND AvailableCopies > 0",
+            id);
+        return rows > 0;
     }
 }

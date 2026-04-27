@@ -4,7 +4,6 @@ using LibraryBookBorrowingSystm.Exceptions;
 using LibraryBookBorrowingSystm.Models;
 using LibraryBookBorrowingSystm.Repositories.Interfaces;
 using LibraryBookBorrowingSystm.Services.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace LibraryBookBorrowingSystm.Services;
 
@@ -33,24 +32,16 @@ public class BorrowService : IBorrowService
 
     public async Task<BorrowRecordResponse> BorrowAsync(BorrowBookRequest request)
     {
+        if (!await _bookRepository.ExistsAsync(request.BookId))
+            throw new NotFoundException("Book not found.");
+
         var existingRecord = await _borrowRecordRepository.GetActiveRecordAsync(request.BookId, request.MemberId);
         if (existingRecord is not null)
-        {
             throw new ValidationException("Member already has an active borrow record for this book.");
-        }
 
-        var book = await _bookRepository.GetByIdAsync(request.BookId);
-        if (book is null)
-        {
-            throw new NotFoundException("Book not found.");
-        }
-
-        if (book.AvailableCopies <= 0)
-        {
-            throw new ValidationException("No copies available to borrow.");
-        }
-
-        book.AvailableCopies--;
+        var decremented = await _bookRepository.TryDecrementAvailableCopiesAsync(request.BookId);
+        if (!decremented)
+            throw new ConflictException("No copies available.");
 
         var borrowRecord = new BorrowRecord
         {
@@ -61,17 +52,9 @@ public class BorrowService : IBorrowService
             Status = "Borrowed"
         };
 
-        try
-        {
-            await _bookRepository.UpdateAsync(book);
-            await _borrowRecordRepository.AddAsync(borrowRecord);
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            throw new ConflictException("The book was just borrowed by another user. Please try again.");
-        }
+        await _borrowRecordRepository.AddAsync(borrowRecord);
 
-        borrowRecord.Book = book;
+        borrowRecord.Book = await _bookRepository.GetByIdAsync(request.BookId);
         return MapToResponse(borrowRecord);
     }
 

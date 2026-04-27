@@ -169,5 +169,5 @@
 
 
 - Returning the same `BORROW_RECORD_ID` again returns `400 Bad Request`.
-#### FAIL --> RETURNS 404 NOT FOUND
+#### PASS
 
